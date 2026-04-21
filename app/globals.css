@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+:root {
+  --omf-bg:         #FFFDF7;
+  --omf-card:       #FFFBF0;
+  --omf-orange:     #F97316;
+  --omf-orange-dark:#ea6510;
+  --omf-crimson:    #B91C1C;
+  --omf-crimson-dark:#7f1d1d;
+  --omf-red-nav:    #991B1B;
+  --omf-red-danger: #DC2626;
+  --omf-green:      #16A34A;
+  --omf-amber:      #92400E;
+  --omf-border:     #FED7AA;
+  --omf-grey-past:  #F5F0E8;
+  --omf-disabled:   #D1C4B0;
+  --background:     #FFFDF7;
+  --foreground:     #B91C1C;
+  --card-bg:        #FFFBF0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Nunito', sans-serif;
+  min-height: 100vh;
+}
+
+h1, h2, h3 {
+  font-family: 'Fredoka One', cursive;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.25s ease forwards;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+.spinner-dark {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(249,115,22,0.2);
+  border-top-color: #F97316;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
