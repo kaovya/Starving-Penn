@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { supabase } from '@/lib/supabase'
 import { signJWT } from '@/lib/jwt'
 import { SESSION_COOKIE } from '@/lib/auth'
+import { sendAdminSignupNotification } from '@/lib/email'
 
 function logSupabaseError(label: string, error: unknown) {
   if (error && typeof error === 'object') {
@@ -93,6 +94,24 @@ export async function POST(request: NextRequest) {
         return Response.json({ error: 'Failed to create account' }, { status: 500 })
       }
       user = inserted
+
+      // Fire-and-forget admin notification — never blocks the signup response
+      ;(async () => {
+        try {
+          const { count } = await supabase
+            .from('users')
+            .select('*', { count: 'exact', head: true })
+          await sendAdminSignupNotification({
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            email: normalizedEmail,
+            phoneNumber: phoneNumber.trim(),
+            totalUsers: count ?? 0,
+          })
+        } catch (err) {
+          console.error('[register] admin notification error (non-fatal):', err)
+        }
+      })()
     }
 
     const token = await signJWT({

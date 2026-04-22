@@ -49,7 +49,7 @@ export default function WhoWeArePage() {
           <strong>Starving @ Penn</strong> is an initiative started on UPenn&apos;s campus. Every semester, underclassmen on the mandatory meal plans end up with <em>hundreds</em> of unused meal swipes and dining dollars that go to waste. We wanted to find a sustainable solution to this problem.
         </p>
         <p>
-          Underclassmen can post open meal invites on the <em>&lsquo;Share Swipes&rsquo;</em> page, sharing their extra swipes with upperclassmen who aren&apos;t on the meal plan. Upperclassmen can browse open invites on the <strong>&lsquo;Join a Meal&rsquo;</strong> page, claim a spot, and show up.
+          Underclassmen can post open meal invites on the <em>&lsquo;Share Swipes&rsquo;</em> page, sharing their extra swipes with upperclassmen who aren&apos;t on the meal plan. Upperclassmen can browse open invites on the <em>&lsquo;Join a Meal&rsquo;</em> page, claim a spot, and show up.
         </p>
         <p>
           Once you join an event as an upperclassmen, you can see the underclassmen&apos;s number and coordinate with them. If you&apos;re an underclassmen who posted an invite, you can see the upperclassmen who joined and their numbers on the <em>&lsquo;Share Swipes&rsquo;</em> page.
