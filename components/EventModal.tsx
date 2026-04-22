@@ -149,7 +149,7 @@ export default function EventModal({ open, onClose, onSubmit, initial, loading }
 
           {/* Swipes */}
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: '#92400E' }}>Number of Swipes</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: '#92400E' }}>Number of Swipes You Can Share (not including yourself)</label>
             <input
               type="number"
               min={1}
