@@ -139,8 +139,8 @@ export async function sendAdminSignupNotification(params: AdminSignupParams): Pr
     return
   }
 
-  const deliverTo = process.env.DEV_EMAIL ?? adminEmail
-  console.log('[admin-email] will deliver to:', deliverTo)
+  // Admin emails always go directly to ADMIN_EMAIL — never redirected to DEV_EMAIL
+  console.log('[admin-email] will deliver to:', adminEmail)
   const { firstName, lastName, email, phoneNumber, totalUsers } = params
 
   const signedUpAt = new Date().toLocaleString('en-US', {
@@ -156,7 +156,7 @@ export async function sendAdminSignupNotification(params: AdminSignupParams): Pr
   console.log('[admin-email] calling Resend API...')
   const { data, error } = await resend.emails.send({
     from: 'Starving @ Penn <onboarding@resend.dev>',
-    to: deliverTo,
+    to: adminEmail,
     subject: '🍜 New Starving @ Penn signup!',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
