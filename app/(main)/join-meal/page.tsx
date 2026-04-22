@@ -378,8 +378,8 @@ function JoinCard({ event, past, joined, myUserId, loading, onJoin, onLeave }: J
           )}
         </div>
 
-        {/* Joiners list */}
-        {joiners.length > 0 && (
+        {/* Joiners list — only shown when the current user has joined */}
+        {joined && joiners.length > 0 && (
           <div className="mt-4 pt-4 border-t animate-fade-in" style={{ borderColor: '#FED7AA' }}>
             <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#92400E' }}>
               Who&apos;s coming ({joiners.length})

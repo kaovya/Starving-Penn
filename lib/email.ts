@@ -125,13 +125,22 @@ interface AdminSignupParams {
 }
 
 export async function sendAdminSignupNotification(params: AdminSignupParams): Promise<void> {
+  console.log('[admin-email] sendAdminSignupNotification called with:', {
+    firstName: params.firstName,
+    email: params.email,
+    totalUsers: params.totalUsers,
+  })
+
   const adminEmail = process.env.ADMIN_EMAIL
+  console.log('[admin-email] ADMIN_EMAIL:', adminEmail ?? '(not set)')
+
   if (!adminEmail) {
-    console.warn('[Resend] ADMIN_EMAIL not set — skipping admin signup notification')
+    console.warn('[admin-email] ADMIN_EMAIL not set — skipping admin signup notification')
     return
   }
 
   const deliverTo = process.env.DEV_EMAIL ?? adminEmail
+  console.log('[admin-email] will deliver to:', deliverTo)
   const { firstName, lastName, email, phoneNumber, totalUsers } = params
 
   const signedUpAt = new Date().toLocaleString('en-US', {
@@ -144,6 +153,7 @@ export async function sendAdminSignupNotification(params: AdminSignupParams): Pr
     timeZone: 'America/New_York',
   })
 
+  console.log('[admin-email] calling Resend API...')
   const { data, error } = await resend.emails.send({
     from: 'Starving @ Penn <onboarding@resend.dev>',
     to: deliverTo,
@@ -191,9 +201,9 @@ export async function sendAdminSignupNotification(params: AdminSignupParams): Pr
   })
 
   if (error) {
-    console.error('[Resend] Admin signup notification failed:', error)
+    console.error('[admin-email] Resend call FAILED:', JSON.stringify(error))
     return
   }
 
-  console.log('[Resend] Admin signup notification sent, id:', data?.id)
+  console.log('[admin-email] Resend call succeeded, email id:', data?.id)
 }

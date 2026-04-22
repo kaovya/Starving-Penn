@@ -94,24 +94,30 @@ export async function POST(request: NextRequest) {
         return Response.json({ error: 'Failed to create account' }, { status: 500 })
       }
       user = inserted
+      console.log('[register] new user inserted successfully — proceeding to admin notification')
 
-      // Fire-and-forget admin notification — never blocks the signup response
-      ;(async () => {
-        try {
-          const { count } = await supabase
-            .from('users')
-            .select('*', { count: 'exact', head: true })
-          await sendAdminSignupNotification({
-            firstName: firstName.trim(),
-            lastName: lastName.trim(),
-            email: normalizedEmail,
-            phoneNumber: phoneNumber.trim(),
-            totalUsers: count ?? 0,
-          })
-        } catch (err) {
-          console.error('[register] admin notification error (non-fatal):', err)
-        }
-      })()
+      // Admin notification — awaited but fully wrapped so it can never break signup
+      try {
+        console.log('[register] ADMIN_EMAIL env value:', process.env.ADMIN_EMAIL ?? '(not set)')
+        console.log('[register] DEV_EMAIL env value:', process.env.DEV_EMAIL ?? '(not set)')
+        console.log('[register] querying total user count...')
+        const { count, error: countError } = await supabase
+          .from('users')
+          .select('*', { count: 'exact', head: true })
+        if (countError) console.error('[register] user count query failed:', countError)
+        console.log('[register] total user count:', count)
+        console.log('[register] calling sendAdminSignupNotification...')
+        await sendAdminSignupNotification({
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          email: normalizedEmail,
+          phoneNumber: phoneNumber.trim(),
+          totalUsers: count ?? 0,
+        })
+        console.log('[register] sendAdminSignupNotification returned successfully')
+      } catch (err) {
+        console.error('[register] admin notification error (non-fatal):', err)
+      }
     }
 
     const token = await signJWT({

@@ -33,12 +33,35 @@ export async function GET(request: NextRequest) {
     return Response.json({ error: 'Failed to fetch events' }, { status: 500 })
   }
 
-  // Derive join_count from the joiners array length
-  const events = (data || []).map((e: any) => ({
-    ...e,
-    joiners: e.joiners ?? [],
-    join_count: e.joiners?.length ?? 0,
-  }))
+  // Fetch which events the current user has joined so we can gate phone numbers
+  const { data: userJoins } = await supabase
+    .from('joins')
+    .select('event_id')
+    .eq('user_id', session.userId)
+
+  const joinedEventIds = new Set((userJoins || []).map((j: any) => j.event_id))
+
+  const events = (data || []).map((e: any) => {
+    const joiners = e.joiners ?? []
+    // Creator always sees everything on their own events (mine=true path).
+    // On the join page, a user must have joined to see any phone numbers.
+    const canSeePhones = e.creator_id === session.userId || joinedEventIds.has(e.id)
+
+    return {
+      ...e,
+      // Null out the creator's phone number if the viewer hasn't joined
+      phone_number: canSeePhones ? e.phone_number : null,
+      // Null out every joiner's phone number if the viewer hasn't joined
+      joiners: joiners.map((j: any) => ({
+        ...j,
+        user: {
+          ...j.user,
+          phone_number: canSeePhones ? j.user?.phone_number ?? null : null,
+        },
+      })),
+      join_count: joiners.length,
+    }
+  })
 
   return Response.json({ events })
 }
