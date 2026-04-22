@@ -28,7 +28,7 @@ interface EventRow {
   time: string
   location: string
   total_swipes: number
-  phone_number: string
+  phone_number: string | null
   created_at: string
   join_count: number
   joiners: Joiner[]
@@ -38,12 +38,10 @@ interface EventRow {
 // Handles "HH:MM:SS" (PostgreSQL), "HH:MM" (old time input), and "H:MM AM/PM" (new free text)
 function parseEventDateTime(date: string, time: string): Date {
   const t = time.trim()
-  // 24-hour: "HH:MM" or "HH:MM:SS"
   if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(t)) {
     const [h, m] = t.split(':').map(Number)
     return new Date(`${date}T${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:00`)
   }
-  // Free-text 12-hour: "H:MM AM/PM"
   const match = t.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
   if (match) {
     let h = parseInt(match[1])
@@ -57,14 +55,12 @@ function parseEventDateTime(date: string, time: string): Date {
 
 function formatTime(timeStr: string): string {
   const t = timeStr.trim()
-  // 24-hour with optional seconds: "HH:MM" or "HH:MM:SS"
   if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(t)) {
     const [h, m] = t.split(':').map(Number)
     const ampm = h >= 12 ? 'PM' : 'AM'
     const hour = h % 12 || 12
     return `${hour}:${m.toString().padStart(2, '0')} ${ampm}`
   }
-  // Already human-readable (e.g. "6:30 PM")
   return t
 }
 
@@ -89,14 +85,17 @@ export default function JoinMealPage() {
   const [myJoins, setMyJoins] = useState<Set<string>>(new Set())
   const [myUserId, setMyUserId] = useState<string>('')
   const [myPhone, setMyPhone] = useState<string | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [adminMode, setAdminMode] = useState(false)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
-  const fetchAll = useCallback(async () => {
+  const fetchAll = useCallback(async (withAdmin = false) => {
     setLoading(true)
     try {
+      const eventsUrl = withAdmin ? '/api/events?admin=true' : '/api/events'
       const [eventsRes, joinsRes, meRes] = await Promise.all([
-        fetch('/api/events'),
+        fetch(eventsUrl),
         fetch('/api/joins'),
         fetch('/api/auth/me'),
       ])
@@ -114,6 +113,7 @@ export default function JoinMealPage() {
       if (meRes.ok && meData.user) {
         setMyUserId(meData.user.userId ?? '')
         setMyPhone(meData.user.phoneNumber ?? null)
+        setIsAdmin(meData.user.isAdmin === true)
       }
     } catch {
       toast.error('Network error')
@@ -122,9 +122,14 @@ export default function JoinMealPage() {
     }
   }, [])
 
-  useEffect(() => { fetchAll() }, [fetchAll])
+  useEffect(() => { fetchAll(false) }, [fetchAll])
 
-  // Direct join — no phone modal needed (phone is on the user's account)
+  function handleAdminToggle() {
+    const next = !adminMode
+    setAdminMode(next)
+    fetchAll(next)
+  }
+
   async function handleJoin(eventId: string) {
     setActionLoading(eventId)
     try {
@@ -190,7 +195,6 @@ export default function JoinMealPage() {
     }
   }
 
-  // Upcoming: soonest first. Past: most recently passed first.
   const upcoming = events
     .filter((e) => !isPast(e.date, e.time))
     .sort((a, b) => parseEventDateTime(a.date, a.time).getTime() - parseEventDateTime(b.date, b.time).getTime())
@@ -200,18 +204,35 @@ export default function JoinMealPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      {/* Back link */}
-      <Link href="/home" className="inline-flex items-center gap-1.5 text-sm font-medium transition-colors mb-6"
-        style={{ color: '#92400E' }}>
-        ← Back
-      </Link>
+      {/* Top bar: back link + admin toggle */}
+      <div className="flex items-center justify-between mb-6">
+        <Link href="/home" className="inline-flex items-center gap-1.5 text-sm font-medium transition-colors"
+          style={{ color: '#92400E' }}>
+          ← Back
+        </Link>
+        {isAdmin && (
+          <button
+            onClick={handleAdminToggle}
+            className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
+            style={{
+              background: adminMode ? '#DC2626' : 'rgba(220,38,38,0.08)',
+              color: adminMode ? 'white' : '#DC2626',
+              border: '1px solid #DC2626',
+            }}
+          >
+            {adminMode ? '👁 Admin View ON' : '👁 Admin View'}
+          </button>
+        )}
+      </div>
 
       {/* Page header */}
       <div className="mb-8 animate-fade-in">
         <h1 className="text-3xl font-bold" style={{ fontFamily: "'Fredoka One', cursive", color: '#B91C1C' }}>
           Join a Meal
         </h1>
-        <p className="text-sm mt-1" style={{ color: '#92400E' }}>Browse available dining swipes from fellow Penn students</p>
+        <p className="text-sm mt-1" style={{ color: '#92400E', fontFamily: "'Nunito', sans-serif" }}>
+          {adminMode ? 'Admin view — all events with full details' : 'Browse available dining swipes from fellow Penn students'}
+        </p>
       </div>
 
       {loading && <Spinner />}
@@ -221,15 +242,14 @@ export default function JoinMealPage() {
           <div className="text-5xl mb-4">🍴</div>
           <h3 className="text-lg font-semibold mb-2"
             style={{ fontFamily: "'Fredoka One', cursive", color: '#B91C1C' }}>No events available</h3>
-          <p className="text-sm" style={{ color: '#92400E' }}>Check back soon — underclassmen will be posting swipes!</p>
+          <p className="text-sm" style={{ color: '#92400E', fontFamily: "'Nunito', sans-serif" }}>Check back soon — underclassmen will be posting swipes!</p>
         </div>
       )}
 
       {!loading && (upcoming.length > 0 || past.length > 0) && (
         <div className="space-y-4">
-          {/* Upcoming section */}
           {upcoming.length > 0 && (
-            <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#92400E' }}>
+            <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#92400E', fontFamily: "'Nunito', sans-serif" }}>
               Available Now
             </p>
           )}
@@ -241,17 +261,17 @@ export default function JoinMealPage() {
               past={false}
               joined={myJoins.has(event.id)}
               myUserId={myUserId}
+              adminMode={adminMode}
               loading={actionLoading === event.id}
               onJoin={() => handleJoin(event.id)}
               onLeave={() => handleLeave(event.id)}
             />
           ))}
 
-          {/* Past events section */}
           {past.length > 0 && (
             <div className="flex items-center gap-3 mt-8 mb-3">
               <div className="flex-1 h-px" style={{ background: '#FED7AA' }} />
-              <p className="text-xs font-semibold uppercase tracking-widest shrink-0" style={{ color: '#92400E' }}>
+              <p className="text-xs font-semibold uppercase tracking-widest shrink-0" style={{ color: '#92400E', fontFamily: "'Nunito', sans-serif" }}>
                 Past Events
               </p>
               <div className="flex-1 h-px" style={{ background: '#FED7AA' }} />
@@ -265,6 +285,7 @@ export default function JoinMealPage() {
               past={true}
               joined={myJoins.has(event.id)}
               myUserId={myUserId}
+              adminMode={adminMode}
               loading={actionLoading === event.id}
               onJoin={() => handleJoin(event.id)}
               onLeave={() => handleLeave(event.id)}
@@ -276,57 +297,71 @@ export default function JoinMealPage() {
   )
 }
 
-// ---- Join Card Sub-component ----
 interface JoinCardProps {
   event: EventRow
   past: boolean
   joined: boolean
   myUserId: string
+  adminMode: boolean
   loading: boolean
   onJoin: () => void
   onLeave: () => void
 }
 
-function JoinCard({ event, past, joined, myUserId, loading, onJoin, onLeave }: JoinCardProps) {
+function JoinCard({ event, past, joined, myUserId, adminMode, loading, onJoin, onLeave }: JoinCardProps) {
   const remaining = event.total_swipes - (event.join_count || 0)
   const isFull = remaining <= 0 && !joined
   const joiners = event.joiners ?? []
+  const showDetails = joined || adminMode
 
   return (
     <div
       className="rounded-2xl shadow-sm border transition-all duration-200 hover:shadow-md animate-fade-in"
       style={{
         background: past ? '#F5F0E8' : '#FFFBF0',
-        borderColor: past ? '#e8ddd0' : '#FED7AA',
+        borderColor: adminMode ? 'rgba(220,38,38,0.3)' : (past ? '#e8ddd0' : '#FED7AA'),
         opacity: past ? 0.7 : 1,
       }}
     >
+      {/* Admin badge on card */}
+      {adminMode && (
+        <div className="px-5 pt-3 pb-0">
+          <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(220,38,38,0.08)', color: '#DC2626' }}>
+            👁 Admin
+          </span>
+        </div>
+      )}
+
       <div className="p-5">
         <div className="flex items-start gap-4">
-          {/* Left: info */}
           <div className="flex-1 min-w-0">
-            {/* Date & Time (bold, top) */}
+            {/* Date & Time */}
             <div className="flex items-center gap-3 flex-wrap">
-              <span className="flex items-center gap-1.5 text-sm font-bold" style={{ color: '#B91C1C' }}>
+              <span className="flex items-center gap-1.5 text-sm font-bold" style={{ color: '#B91C1C', fontFamily: "'Fredoka One', cursive" }}>
                 <Calendar size={14} className="shrink-0" />
                 {smartDateLabel(event.date, event.time)}
               </span>
             </div>
 
             {/* Creator name */}
-            <p className="mt-1 text-sm" style={{ color: '#92400E' }}>
+            <p className="mt-1 text-sm" style={{ color: '#92400E', fontFamily: "'Nunito', sans-serif" }}>
               Posted by <span className="font-semibold" style={{ color: '#B91C1C' }}>{event.creator?.first_name || 'Penn Student'}</span>
+              {adminMode && event.phone_number && (
+                <span className="ml-2 font-semibold" style={{ color: '#DC2626' }}>
+                  · 📞 {event.phone_number}
+                </span>
+              )}
             </p>
 
             {/* Location */}
-            <div className="flex items-center gap-1.5 mt-1.5 text-sm" style={{ color: '#92400E' }}>
+            <div className="flex items-center gap-1.5 mt-1.5 text-sm" style={{ color: '#92400E', fontFamily: "'Nunito', sans-serif" }}>
               <MapPin size={13} className="shrink-0" style={{ opacity: 0.6 }} />
               <span className="truncate">{event.location}</span>
             </div>
 
             {/* Swipes */}
             <div className="flex items-center gap-3 mt-2 flex-wrap">
-              <span className="flex items-center gap-1.5 text-sm" style={{ color: '#92400E' }}>
+              <span className="flex items-center gap-1.5 text-sm" style={{ color: '#92400E', fontFamily: "'Nunito', sans-serif" }}>
                 <Users size={13} className="shrink-0" />
                 {event.total_swipes} swipes total
               </span>
@@ -342,35 +377,35 @@ function JoinCard({ event, past, joined, myUserId, loading, onJoin, onLeave }: J
               </span>
             </div>
 
-            {/* Host contact — visible once joined */}
-            {joined && !past && (
+            {/* Host contact — visible once joined (non-admin) */}
+            {joined && !past && !adminMode && event.phone_number && (
               <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium animate-fade-in"
-                style={{ background: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0' }}>
+                style={{ background: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0', fontFamily: "'Nunito', sans-serif" }}>
                 <Phone size={13} className="shrink-0" />
                 <span>Host contact: <span className="font-bold">{event.phone_number}</span></span>
               </div>
             )}
           </div>
 
-          {/* Right: Join/Leave button */}
+          {/* Join/Leave button */}
           {!past && (
             <div className="shrink-0 self-center">
               {joined ? (
                 <button onClick={onLeave} disabled={loading}
                   className="px-4 py-2 rounded-xl text-sm font-semibold text-white flex items-center gap-1.5 transition-all hover:opacity-90 active:scale-95 disabled:opacity-60 cursor-pointer"
-                  style={{ background: '#DC2626', minWidth: 80 }}>
+                  style={{ background: '#DC2626', minWidth: 80, fontFamily: "'Nunito', sans-serif" }}>
                   {loading ? <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> : 'Leave'}
                 </button>
               ) : isFull ? (
                 <button disabled
                   className="px-4 py-2 rounded-xl text-sm font-semibold cursor-not-allowed"
-                  style={{ background: '#D1C4B0', color: '#78716c', minWidth: 80 }}>
+                  style={{ background: '#D1C4B0', color: '#78716c', minWidth: 80, fontFamily: "'Nunito', sans-serif" }}>
                   Full
                 </button>
               ) : (
                 <button onClick={onJoin} disabled={loading}
                   className="px-4 py-2 rounded-xl text-sm font-semibold text-white flex items-center gap-1.5 transition-all hover:opacity-90 active:scale-95 disabled:opacity-60 cursor-pointer"
-                  style={{ background: '#F97316', minWidth: 80 }}>
+                  style={{ background: '#F97316', minWidth: 80, fontFamily: "'Nunito', sans-serif" }}>
                   {loading ? <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> : 'Join'}
                 </button>
               )}
@@ -378,10 +413,10 @@ function JoinCard({ event, past, joined, myUserId, loading, onJoin, onLeave }: J
           )}
         </div>
 
-        {/* Joiners list — only shown when the current user has joined */}
-        {joined && joiners.length > 0 && (
-          <div className="mt-4 pt-4 border-t animate-fade-in" style={{ borderColor: '#FED7AA' }}>
-            <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#92400E' }}>
+        {/* Joiners list — shown when joined OR in admin mode */}
+        {showDetails && joiners.length > 0 && (
+          <div className="mt-4 pt-4 border-t animate-fade-in" style={{ borderColor: adminMode ? 'rgba(220,38,38,0.2)' : '#FED7AA' }}>
+            <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: adminMode ? '#DC2626' : '#92400E', fontFamily: "'Nunito', sans-serif" }}>
               Who&apos;s coming ({joiners.length})
             </p>
             <div className="space-y-1.5">
@@ -393,13 +428,13 @@ function JoinCard({ event, past, joined, myUserId, loading, onJoin, onLeave }: J
                     border: j.user.id === myUserId ? '1px solid #FED7AA' : '1px solid #f3ead8',
                   }}>
                   <span className="text-base">👤</span>
-                  <span className="font-semibold" style={{ color: '#B91C1C' }}>
+                  <span className="font-semibold" style={{ color: '#B91C1C', fontFamily: "'Nunito', sans-serif" }}>
                     {j.user.id === myUserId ? 'You' : j.user.first_name}
                   </span>
                   {j.user.phone_number && (
                     <>
                       <span style={{ color: '#FED7AA' }}>·</span>
-                      <span className="flex items-center gap-1" style={{ color: '#92400E' }}>
+                      <span className="flex items-center gap-1" style={{ color: '#92400E', fontFamily: "'Nunito', sans-serif" }}>
                         <Phone size={11} className="shrink-0" />
                         {j.user.phone_number}
                       </span>

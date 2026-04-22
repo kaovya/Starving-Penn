@@ -2,8 +2,14 @@ import { NextRequest } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 
-// GET /api/events — list all events (for join page)
-// GET /api/events?mine=true — list my events (for share page)
+// Admin email is checked server-side against the verified JWT session only.
+// The ?admin=true query param is meaningless without a matching session email —
+// a non-admin user sending ?admin=true gets identical output to a normal request.
+const ADMIN_EMAIL = '620843kavs@upenn.edu'
+
+// GET /api/events            — list all events (for join page)
+// GET /api/events?mine=true  — list my events (for share page)
+// GET /api/events?admin=true — admin only: all events with full phone numbers
 export async function GET(request: NextRequest) {
   const session = await getSession()
   if (!session) {
@@ -11,6 +17,12 @@ export async function GET(request: NextRequest) {
   }
 
   const mine = request.nextUrl.searchParams.get('mine') === 'true'
+  // isAdmin is derived exclusively from the server-verified JWT session email.
+  // The client cannot influence this value — it comes from the signed httpOnly cookie.
+  const isAdmin = session.email === ADMIN_EMAIL
+  // adminMode requires BOTH a matching session AND the opt-in param.
+  // If isAdmin is false, adminMode is always false regardless of query params.
+  const adminMode = isAdmin && request.nextUrl.searchParams.get('admin') === 'true'
 
   let query = supabase
     .from('events')
@@ -22,7 +34,8 @@ export async function GET(request: NextRequest) {
     .order('date', { ascending: true })
     .order('time', { ascending: true })
 
-  if (mine) {
+  // Admin mode bypasses the mine filter — returns all events
+  if (!adminMode && mine) {
     query = query.eq('creator_id', session.userId)
   }
 
@@ -33,25 +46,27 @@ export async function GET(request: NextRequest) {
     return Response.json({ error: 'Failed to fetch events' }, { status: 500 })
   }
 
-  // Fetch which events the current user has joined so we can gate phone numbers
-  const { data: userJoins } = await supabase
-    .from('joins')
-    .select('event_id')
-    .eq('user_id', session.userId)
-
-  const joinedEventIds = new Set((userJoins || []).map((j: any) => j.event_id))
+  // Fetch which events the current user has joined (skip in admin mode — not needed)
+  let joinedEventIds = new Set<string>()
+  if (!adminMode) {
+    const { data: userJoins } = await supabase
+      .from('joins')
+      .select('event_id')
+      .eq('user_id', session.userId)
+    joinedEventIds = new Set((userJoins || []).map((j: any) => j.event_id))
+  }
 
   const events = (data || []).map((e: any) => {
     const joiners = e.joiners ?? []
-    // Creator always sees everything on their own events (mine=true path).
-    // On the join page, a user must have joined to see any phone numbers.
-    const canSeePhones = e.creator_id === session.userId || joinedEventIds.has(e.id)
+    // Admin mode sees everything. Otherwise: creator or joined user sees phones.
+    const canSeePhones =
+      adminMode ||
+      e.creator_id === session.userId ||
+      joinedEventIds.has(e.id)
 
     return {
       ...e,
-      // Null out the creator's phone number if the viewer hasn't joined
       phone_number: canSeePhones ? e.phone_number : null,
-      // Null out every joiner's phone number if the viewer hasn't joined
       joiners: joiners.map((j: any) => ({
         ...j,
         user: {
