@@ -46,17 +46,16 @@ export default function WhoWeArePage() {
       {/* Body text */}
       <div className="space-y-5 leading-relaxed animate-fade-in text-[15px]" style={{ color: '#B91C1C', fontFamily: "'Nunito', sans-serif" }}>
         <p>
-          <strong>Starving @ Penn</strong> is an initiative started on UPenn&apos;s campus. Every semester, underclassmen on the mandatory meal plans end up with{' '}
-          <em>hundreds</em> of unused meal swipes and dining dollars that go to waste. We wanted to find a sustainable solution to this problem.
+          <strong>Starving @ Penn</strong> is an initiative started on UPenn&apos;s campus. Every semester, underclassmen on the mandatory meal plans end up with <em>hundreds</em> of unused meal swipes and dining dollars that go to waste. We wanted to find a sustainable solution to this problem.
         </p>
         <p>
-          We created this app as a way to not only try and solve this problem, but also to
-          strengthen the Penn community and help students find ways to broaden their circles. Our
-          platform is built entirely by students, for students. Penn is full of so many inspiring,
-          accomplished, and passionate student leaders that meeting someone new here can be the
-          thing that{' '}
-          <em>changes your life</em>
-          . So give us a chance and grab a meal with a stranger!
+          Underclassmen can post open meal invites on the <em>&lsquo;Share Swipes&rsquo;</em> page, sharing their extra swipes with upperclassmen who aren&apos;t on the meal plan. Upperclassmen can browse open invites on the <strong>&lsquo;Join a Meal&rsquo;</strong> page, claim a spot, and show up.
+        </p>
+        <p>
+          Once you join an event as an upperclassmen, you can see the underclassmen&apos;s number and coordinate with them. If you&apos;re an underclassmen who posted an invite, you can see the upperclassmen who joined and their numbers on the <em>&lsquo;Share Swipes&rsquo;</em> page.
+        </p>
+        <p>
+          We created this app as a way to not only try and solve this problem, but also to strengthen the Penn community and help students find ways to broaden their circles. Our platform is built entirely by students, for students. Penn is full of so many inspiring, accomplished, and passionate student leaders that meeting someone new here can be the thing that <em>changes your life</em>. So give us a chance and grab a meal with a stranger!
         </p>
       </div>
 
