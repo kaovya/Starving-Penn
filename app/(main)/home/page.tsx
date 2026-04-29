@@ -8,7 +8,7 @@ export default async function HomePage() {
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-56px)] px-4 py-12">
       {/* Greeting */}
       <div className="text-center mb-10 animate-fade-in">
-        <div className="text-6xl mb-3">🍜</div>
+        <div className="text-6xl mb-3">🍽️</div>
         <h1
           className="text-4xl sm:text-5xl font-bold mb-3"
           style={{ fontFamily: "'Fredoka One', cursive", color: '#B91C1C' }}

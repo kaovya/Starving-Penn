@@ -36,12 +36,12 @@ export default function Navbar({ firstName }: NavbarProps) {
           onClick={() => router.push('/home')}
           className="group cursor-pointer flex items-center gap-2"
         >
-          <span className="text-2xl leading-none">🍜</span>
+          <span className="text-2xl leading-none">🍽️</span>
           <span
             className="text-white text-sm sm:text-base tracking-wide group-hover:opacity-80 transition-opacity"
             style={{ fontFamily: "'Fredoka One', cursive" }}
           >
-            Starving @ Penn
+            Still Hungry
           </span>
         </button>
 

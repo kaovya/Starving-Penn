@@ -9,19 +9,19 @@ export async function sendOTPEmail(email: string, code: string): Promise<void> {
   const deliverTo = process.env.DEV_EMAIL ?? email
 
   const { data, error } = await resend.emails.send({
-    from: 'Starving @ Penn <onboarding@resend.dev>',
+    from: 'Still Hungry <onboarding@resend.dev>',
     to: deliverTo,
     subject: `Your verification code: ${code}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
         <div style="background: #991B1B; padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
           <h1 style="color: white; font-family: Georgia, serif; font-size: 22px; margin: 0;">
-            🍜 Starving @ Penn
+            🍽️ Still Hungry
           </h1>
         </div>
         <div style="background: #FFFBF0; border: 1px solid #FED7AA; border-top: none; padding: 32px; border-radius: 0 0 12px 12px;">
           <p style="color: #B91C1C; font-size: 16px; margin: 0 0 24px;">
-            Hi there! Here's your one-time verification code to log in to Starving @ Penn:
+            Hi there! Here's your one-time verification code to log in to Still Hungry:
           </p>
           <div style="background: #FFF7ED; border-radius: 8px; padding: 20px; text-align: center; margin: 0 0 24px; border: 1px solid #FED7AA;">
             <span style="font-size: 40px; font-weight: 700; letter-spacing: 12px; color: #F97316; font-family: monospace;">
@@ -33,7 +33,7 @@ export async function sendOTPEmail(email: string, code: string): Promise<void> {
           </p>
         </div>
         <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 16px;">
-          © Starving @ Penn · UPenn
+          © Still Hungry · UPenn
         </p>
       </div>
     `,
@@ -73,14 +73,14 @@ export async function sendJoinNotificationEmail(params: JoinNotificationParams):
   const deliverTo = process.env.DEV_EMAIL ?? creatorEmail
 
   const { data, error } = await resend.emails.send({
-    from: 'Starving @ Penn <onboarding@resend.dev>',
+    from: 'Still Hungry <onboarding@resend.dev>',
     to: deliverTo,
-    subject: `🍜 ${joinerName} joined your meal at ${location}!`,
+    subject: `🍽️ ${joinerName} joined your meal at ${location}!`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
         <div style="background: #991B1B; padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
           <h1 style="color: white; font-family: Georgia, serif; font-size: 22px; margin: 0;">
-            🍜 Starving @ Penn
+            🍽️ Still Hungry
           </h1>
         </div>
         <div style="background: #FFFBF0; border: 1px solid #FED7AA; border-top: none; padding: 32px; border-radius: 0 0 12px 12px;">
@@ -101,7 +101,7 @@ export async function sendJoinNotificationEmail(params: JoinNotificationParams):
           </p>
         </div>
         <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 16px;">
-          © Starving @ Penn · UPenn
+          © Still Hungry · UPenn
         </p>
       </div>
     `,
@@ -155,19 +155,19 @@ export async function sendAdminSignupNotification(params: AdminSignupParams): Pr
 
   console.log('[admin-email] calling Resend API...')
   const { data, error } = await resend.emails.send({
-    from: 'Starving @ Penn <onboarding@resend.dev>',
+    from: 'Still Hungry <onboarding@resend.dev>',
     to: adminEmail,
-    subject: '🍜 New Starving @ Penn signup!',
+    subject: '🍽️ New Still Hungry signup!',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
         <div style="background: #991B1B; padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
           <h1 style="color: white; font-family: Georgia, serif; font-size: 22px; margin: 0;">
-            🍜 Starving @ Penn
+            🍽️ Still Hungry
           </h1>
         </div>
         <div style="background: #FFFBF0; border: 1px solid #FED7AA; border-top: none; padding: 32px; border-radius: 0 0 12px 12px;">
           <p style="color: #B91C1C; font-size: 16px; margin: 0 0 20px;">
-            A new user just joined Starving @ Penn!
+            A new user just joined Still Hungry!
           </p>
           <table style="width: 100%; border-collapse: collapse; font-size: 15px; color: #92400E;">
             <tr>
@@ -194,7 +194,7 @@ export async function sendAdminSignupNotification(params: AdminSignupParams): Pr
           </div>
         </div>
         <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 16px;">
-          © Starving @ Penn · UPenn
+          © Still Hungry · UPenn
         </p>
       </div>
     `,

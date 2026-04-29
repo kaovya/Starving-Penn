@@ -89,10 +89,10 @@ export default function LandingPage() {
       <div className="w-full max-w-md z-10 animate-fade-in">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="text-6xl mb-3">🍜</div>
+          <div className="text-6xl mb-3">🍽️</div>
           <h1 className="text-4xl font-bold text-white leading-tight"
             style={{ fontFamily: "'Fredoka One', cursive" }}>
-            Starving @ Penn
+            Still Hungry
           </h1>
         </div>
 
@@ -205,7 +205,7 @@ export default function LandingPage() {
         </div>
 
         <p className="text-center text-xs mt-6" style={{ color: 'rgba(255,253,247,0.35)', fontFamily: "'Nunito', sans-serif" }}>
-          © 2026 Starving @ Penn · University of Pennsylvania
+          © 2026 Still Hungry · University of Pennsylvania
         </p>
       </div>
     </main>

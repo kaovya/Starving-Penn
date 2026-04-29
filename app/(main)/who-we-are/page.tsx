@@ -46,7 +46,7 @@ export default function WhoWeArePage() {
       {/* Body text */}
       <div className="space-y-5 leading-relaxed animate-fade-in text-[15px]" style={{ color: '#B91C1C', fontFamily: "'Nunito', sans-serif" }}>
         <p>
-          <strong>Starving @ Penn</strong> is an initiative started on UPenn&apos;s campus. Every semester, underclassmen on the mandatory meal plans end up with <em>hundreds</em> of unused meal swipes and dining dollars that go to waste. We wanted to find a sustainable solution to this problem.
+          <strong>Still Hungry</strong> is an initiative started on UPenn&apos;s campus. Every semester, underclassmen on the mandatory meal plans end up with <em>hundreds</em> of unused meal swipes and dining dollars that go to waste. We wanted to find a sustainable solution to this problem.
         </p>
         <p>
           Underclassmen can post open meal invites on the <em>&lsquo;Share Swipes&rsquo;</em> page, sharing their extra swipes with upperclassmen who aren&apos;t on the meal plan. Upperclassmen can browse open invites on the <em>&lsquo;Join a Meal&rsquo;</em> page, claim a spot, and show up.

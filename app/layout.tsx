@@ -3,7 +3,7 @@ import { Toaster } from 'react-hot-toast'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Starving @ Penn',
+  title: 'Still Hungry',
   description: 'Connecting UPenn students — share or join a dining swipe',
 }
 
